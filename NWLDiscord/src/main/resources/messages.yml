@@ -13,6 +13,9 @@ placeholders:
   checking-disabled: "disabled"
   checking-optional: "optional"
   checking-required: "required"
+  modal-input-label: "Player Name"
+  modal-input-placeholder: "Place your name here"
+  modal-label: "Whitelist Menu"
 discord:
   channel:
     start:

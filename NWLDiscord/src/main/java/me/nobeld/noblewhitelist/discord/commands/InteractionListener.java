@@ -82,17 +82,25 @@ public class InteractionListener extends ListenerAdapter { // TEMP VIEW OF NEW F
                 handleReply(event, MessageData.Error.selfNoMoreAccounts);
                 return;
             }
-            TextInput input = TextInput.create(MENU_INPUT_ID, "Player Name", TextInputStyle.PARAGRAPH)
-                    .setPlaceholder("Place your name here")
+            TextInput input = TextInput.create(MENU_INPUT_ID, textOrDefault(MessageData.PlaceHolders.modalInputLabel), TextInputStyle.PARAGRAPH)
+                    .setPlaceholder(textOrDefault(MessageData.PlaceHolders.modalInputPlaceholder))
                     .setMinLength(1)
                     .setMaxLength(100)
                     .build();
 
-            Modal modal = Modal.create(MODAL_MODAL_ID, "Whitelist Menu")
+            Modal modal = Modal.create(MODAL_MODAL_ID, textOrDefault(MessageData.PlaceHolders.modalLabel))
                     .addComponents(ActionRow.of(input))
                     .build();
             event.replyModal(modal).queue();
         }
+    }
+
+    private String textOrDefault(ConfigContainer<String> container) {
+        var text = data.getMessageD().getMsg(container);
+        if (text == null || text.isBlank()) {
+            return container.def();
+        }
+        return text;
     }
 
 

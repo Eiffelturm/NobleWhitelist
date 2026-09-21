@@ -14,6 +14,7 @@ import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.command.GenericCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.commands.CommandInteraction;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
@@ -31,11 +32,11 @@ import org.incendo.cloud.parser.standard.StringParser;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.logging.Level;
 
 import static me.nobeld.noblewhitelist.discord.commands.CommandManager.REQUIREMENTS_KEY;
 import static me.nobeld.noblewhitelist.discord.model.command.BaseCommand.*;
-import static me.nobeld.noblewhitelist.discord.util.DiscordUtil.isNullEmpty;
 
 public class AdminSend {
     private final NWLDsData data;
@@ -61,6 +62,14 @@ public class AdminSend {
         }
     }
 
+    private static Optional<OptionMapping> mapping(CommandInteraction ci, String name) {
+        return Optional.ofNullable(ci.getOption(name));
+    }
+
+    private static <T> Optional<T> mapping(CommandInteraction ci, String name, Function<OptionMapping, T> fun) {
+        return Optional.ofNullable(ci.getOption(name, fun));
+    }
+
     public SubCommand command() {
         return new SubCommand(b -> b.literal("send", Description.of("Experimental feature, little customizable."))  
                 .optional("path", StringParser.greedyStringParser())
@@ -79,15 +88,14 @@ public class AdminSend {
                     GenericCommandInteractionEvent e = c.sender().interactionEvent();
                     assert e != null;
 
-                    final Channel channel = Optional.ofNullable(e.getOption("channel"))
-                            .<Channel>map(OptionMapping::getAsChannel).orElse(e.getChannel());
-                    final Optional<String> strEdit = Optional.ofNullable(e.getOption("edit")).map(OptionMapping::getAsString);
+                    final Channel channel = mapping(e, "channel", o -> (Channel) o.getAsChannel()).orElse(e.getChannel());
+                    final Optional<String> strEdit = mapping(e, "edit", OptionMapping::getAsString);
                     if ((channel == null || channel.getType() != ChannelType.TEXT) && strEdit.isEmpty()) {
                         replyMsg(c, "No location to send the message was found.", true);
                         return;
                     }
-                    final Optional<String> path = Optional.ofNullable(e.getOption("path")).map(OptionMapping::getAsString);
-                    final Optional<Boolean> disabled = Optional.ofNullable(e.getOption("disabled")).map(OptionMapping::getAsBoolean);
+                    final Optional<String> path = mapping(e, "path", OptionMapping::getAsString);
+                    final Optional<Boolean> disabled = mapping(e, "disabled", OptionMapping::getAsBoolean);
 
                     if (path.isPresent()) {
                         ConfigContainer<String> view = new ConfigContainer<>(path.get(), "");
@@ -97,22 +105,21 @@ public class AdminSend {
                             return;
                         }
                         FlatFileSection section = data.getMessageD().getMsgSec(view);
-                        String button = section.getRaw("extras.button", "");
-                        String emoji = section.getRaw("extras.emoji", "");
-                        String type = section.getRaw("extras.type", "");
+                        Optional<String> button = section.find("extras.button", String.class);
+                        Optional<String> emoji = section.find("extras.emoji", String.class);
+                        Optional<String> type = section.find("extras.type", String.class);
                         boolean shouldEdit = strEdit.isPresent();
-                        if (isNullEmpty(button)) {
-                            button = shouldEdit ? null : "Whitelist";
+                        if (button.isEmpty() || button.filter(DiscordUtil::isNullEmpty).isPresent()) {
+                            button = shouldEdit ? Optional.empty() : Optional.of("Whitelist");
                         }
                         final ActionRow row;
-                        if (button != null) {
+                        if (button.isPresent()) {
                             Button bt = Button.of(
-                                    Optional.ofNullable(type).map(o -> ButtonType.valueOf(o.toUpperCase()))
+                                    type.map(o -> ButtonType.valueOf(o.toUpperCase()))
                                             .orElse(ButtonType.SECONDARY).getStyle(),
                                     InteractionListener.MENU_OPEN_BUTTON_ID,
-                                    button,
-                                    Optional.ofNullable(emoji).map(DiscordUtil::toEmoji).orElse(null)
-                                                 );
+                                    button.get(),
+                                    emoji.map(DiscordUtil::toEmoji).orElse(null));
                             if (disabled.filter(o -> o).isPresent()) {
                                 bt = bt.asDisabled();
                             }
@@ -144,11 +151,10 @@ public class AdminSend {
                         return;
                     }
 
-                    Emoji emoji = Optional.ofNullable(e.getOption("emoji")).map(OptionMapping::getAsString)
-                            .map(DiscordUtil::toEmoji).orElse(null);
+                    Emoji emoji = mapping(e, "emoji", OptionMapping::getAsString).map(DiscordUtil::toEmoji).orElse(null);
 
-                    Optional<String> desc = Optional.ofNullable(e.getOption("button")).map(OptionMapping::getAsString);
-                    Optional<String> content = Optional.ofNullable(e.getOption("content")).map(OptionMapping::getAsString);
+                    Optional<String> desc =  mapping(e, "button", OptionMapping::getAsString);
+                    Optional<String> content =  mapping(e, "content", OptionMapping::getAsString);
 
                     if (strEdit.isPresent()) {
                         RestAction<Message> message = DiscordUtil.getMessageFromLink(manager.getJDA(), strEdit.get());
@@ -158,7 +164,7 @@ public class AdminSend {
                         }
                         Optional<MessageEditData> action = content.map(MessageEditData::fromContent);
                         Optional<Button> button = desc.map(s ->
-                            Button.of(Optional.ofNullable(e.getOption("type")).map(o -> ButtonType.valueOf(o.getAsString().toUpperCase()))
+                            Button.of( mapping(e, "type", o -> ButtonType.valueOf(o.getAsString().toUpperCase()))
                                               .orElse(ButtonType.SECONDARY).getStyle(), InteractionListener.MENU_OPEN_BUTTON_ID, s, emoji));
                         message.queue(m -> {
                             if (m.getAuthor() != manager.getJDA().getSelfUser()) {
@@ -192,13 +198,12 @@ public class AdminSend {
                         }
                         TextChannel ch = (TextChannel) channel;
                         String d = content.orElse("Whitelist");
-                        Button button = Button.of(Optional.ofNullable(e.getOption("type"))
-                                            .map(o -> ButtonType.valueOf(o.getAsString().toUpperCase()))
+                        Button button = Button.of( mapping(e, "type", o -> ButtonType.valueOf(o.getAsString().toUpperCase()))
                                             .orElse(ButtonType.SECONDARY).getStyle(), InteractionListener.MENU_OPEN_BUTTON_ID, desc.orElse("Register to whitelist"), emoji);
 
                         MessageCreateData data = new MessageCreateBuilder().addContent(d).addComponents(ActionRow.of(button)).build();
                         ch.sendMessage(data).queue();
-                        replyMsg(c, "Message was send", true);
+                        replyMsg(c, "Message was sent.", true);
                     }
                 })
         );

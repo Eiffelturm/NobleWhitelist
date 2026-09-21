@@ -1,5 +1,4 @@
 # More information: https://github.com/NobelD/NobleWhitelist/wiki
-# TODO modify and messages grammar
 discord:
   # The token of your bot, be sure to not share it with anyone!
   bot-token: ""

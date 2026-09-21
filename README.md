@@ -7,7 +7,7 @@ Also, this plugin has a discord integration to be used by users or managed from 
 
 ## Versions:
 - This plugin support all spigot base software (paper is recommended)
-- This plugin only support versions from 1.18+ and java 21+
+- This plugin only support versions from 1.18+ and java 17+
 
 ## Noble Whitelist Links:
 
@@ -27,5 +27,7 @@ Also, this plugin has a discord integration to be used by users or managed from 
 
 ## About Code:
 - Suggestions, tips and PR are welcome to improve the code.
+- I'm not accepting any PR for now, currently I'm working on a full code rewrite with better maintainability.
+- Please only open a PR if there is big changes to the code (instead try to open an issue!)
 - The dev branch sometimes have some experimental features and updates.
-- If you want to use the plugin's api you can see more about in the [wiki](https://github.com/NobelD/NobleWhitelist/wiki/API).
+- There is currently no plugin api, this will be expanded on the next major version. [wiki](https://github.com/NobelD/NobleWhitelist/wiki/API).

@@ -155,7 +155,7 @@ public class LibsManager {
         libraries.add(Library.builder()
                 .groupId("org{}incendo")
                 .artifactId("cloud-core")
-                .version("2.0.1")
+                .version("2.1.0")
                 .relocate(reloc("org{}incendo"))
                 .resolveTransitiveDependencies(true)
                 .build());

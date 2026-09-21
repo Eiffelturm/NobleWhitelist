@@ -161,10 +161,14 @@ public class FileFlat<T extends FlatFile> implements DataGetter {
         }).findFirst().orElse(null);
     }
     @Override
-    public List<WhitelistEntry> listIndex(int page) {
-        if (page <= 1) return getAll().stream().limit(10).collect(Collectors.toList());
-        int amount = 10 * (page - 1);
-        return getAll().stream().skip(amount).limit(10).collect(Collectors.toList());
+    public List<WhitelistEntry> listAmount(int amount, int offset) {
+        if (amount == 0) return List.of();
+        if (amount < 0) {
+            return getAll();
+        }
+        if (offset <= 1) return getAll().stream().limit(amount).collect(Collectors.toList());
+        int o = amount * (offset - 1);
+        return getAll().stream().skip(o).limit(amount).collect(Collectors.toList());
     }
     @Override
     public long getTotal() {

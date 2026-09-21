@@ -51,31 +51,102 @@ public class MessageData {
     public static Component listPage(int page) {
         return AdventureUtil.formatAll("<prefix><#FF9CBB>Whitelist Index <#B490F0>- <#99EAFE>Page<#65A8FF>: <#F07DF0>" + page);
     }
-    public static Component listString(WhitelistEntry data) {
-        String row;
-        if (data.isWhitelisted()) row = "<#90FC4E>" + data.getRowId() + "<#39E52B> > ";
-        else row = "<#F46C4E>" + data.getRowId() + "<#E3341C> > ";
-
-        String name;
-        if (data.getOptName().isPresent()) name = "<#76F2D6>" + data.getName();
-        else name = "<#4E71AD>none";
-
-        String uuid;
-        if (data.getOptUUID().isPresent()) uuid = "<#F3FF8E>" + data.getUUID();
-        else uuid = "<#D0845F>none";
-        return AdventureUtil.formatAll(row + name + " <#F7C85D>- " + uuid);
+    public static Component listAmount(int amount, int offset) {
+        return AdventureUtil.formatAll("<prefix><#FF9CBB>Whitelist List <#B490F0>- <#99EAFE>Amount<#65A8FF>: <#F07DF0>" + amount + " <#99EAFE>Offset<#65A8FF>: <#F07DF0>" + offset);
     }
-    public static Component listEmpty(int page) {
-        return AdventureUtil.formatAll("<prefix><#FF9CBB>This page is empty. <#B490F0>- <#99EAFE>Page<#65A8FF>: <#F07DF0>" + page);
+    public static Component listAmountSimple(int amount, int offset) {
+        return AdventureUtil.formatAll("<prefix><#FF9CBB>There is <color:#F07DF0>" + amount + "</color> whitelist entries: (<#99EAFE>Offset<#65A8FF>: <#F07DF0>" + offset + "): ");
+    }
+    public static Component listWriteSuccess() {
+        return AdventureUtil.formatAll("<prefix><#FBC36F>Successfully file written, check the plugin folder!");
+    }
+    public static Component listWriteError() {
+        return AdventureUtil.formatAll("<prefix><#F46C4E>An error occurred while writing to file, check console for more details!");
+    }
+    public static Component listString(WhitelistEntry data) {
+        StringBuilder builder = new StringBuilder();
+        if (data.isWhitelisted()) builder.append("<#90FC4E>").append(data.getRowId()).append("<#39E52B> > ");
+        else builder.append("<#F46C4E>").append(data.getRowId()).append("<#E3341C> > ");
+
+        if (data.getOptName().isPresent()) builder.append("<#76F2D6>").append(data.getName());
+        else builder.append("<#4E71AD>none");
+
+        builder.append(" <#F7C85D>- ");
+        if (data.getOptUUID().isPresent()) builder.append("<#F3FF8E>").append(data.getUUID());
+        else builder.append("<#D0845F>none");
+        return AdventureUtil.formatAll(builder.toString());
+    }
+    public static Component listString(boolean row, boolean name, boolean uuid, WhitelistEntry data) {
+        boolean least2 = row ? (name || uuid) : (name && uuid);
+        StringBuilder builder = new StringBuilder();
+        if (row) {
+            if (data.isWhitelisted()) builder.append("<#90FC4E>").append(data.getRowId()).append("<#39E52B> > ");
+            else if (least2) builder.append("<#F46C4E>").append(data.getRowId()).append("<#E3341C> > ");
+        }
+
+        if (name) {
+            if (data.getOptName().isPresent()) builder.append("<#76F2D6>").append(data.getName());
+            else if (least2) builder.append("<#4E71AD>none");
+        }
+
+        if (uuid) {
+            builder.append(" <#F7C85D>- ");
+            if (data.getOptUUID().isPresent()) builder.append("<#F3FF8E>").append(data.getUUID());
+            else if (least2) builder.append("<#D0845F>none");
+        }
+        if (builder.isEmpty()) return Component.empty();
+        return AdventureUtil.formatAll(builder.toString());
+    }
+    // TEMP
+    public static String listPlainString(WhitelistEntry data) {
+        StringBuilder builder = new StringBuilder();
+        builder.append(data.getRowId()).append(" > ");
+
+        if (data.getOptName().isPresent()) builder.append(data.getName());
+        else builder.append("none");
+
+        builder.append(" - ");
+        if (data.getOptUUID().isPresent()) builder.append(data.getUUID());
+        else builder.append("none");
+        return builder.toString();
+    }
+    public static String listPlainString(boolean row, boolean name, boolean uuid, WhitelistEntry data) {
+        boolean least2 = row ? (name || uuid) : (name && uuid);
+        StringBuilder builder = new StringBuilder();
+        if (row) {
+            builder.append(data.getRowId());
+            if (least2) builder.append(" > ");
+        }
+
+        if (name) {
+            if (data.getOptName().isPresent()) builder.append(data.getName());
+            else if (least2) builder.append("none");
+        }
+
+        if (uuid) {
+            if (least2) builder.append(" - ");
+            if (data.getOptUUID().isPresent()) builder.append(data.getUUID());
+            else if (least2) builder.append("none");
+        }
+        return builder.toString();
+    }
+    public static Component suggestFlag() {
+        return AdventureUtil.formatAll("<prefix><#FF9CBB>You're about to list more than 100 entries! use the flag <color:#76F2D6>-generator file</color> to generate a file instead, or use <color:#76F2D6>-generator message</color> to force a message.");
+    }
+    public static Component listPageEmpty(int page) {
+        return AdventureUtil.formatAll("<prefix><#FF9CBB>This page is empty! <#B490F0>- <#99EAFE>Page<#65A8FF>: <#F07DF0>" + page);
+    }
+    public static Component listEmpty(int amount, int offset) {
+        return AdventureUtil.formatAll("<prefix><#FF9CBB>There is no more entries left! <#B490F0>- <#99EAFE>Amount<#65A8FF>: <#F07DF0>" + amount + "<#99EAFE>Offset<#65A8FF>: <#F07DF0>" + offset);
     }
     public static Component whitelistEmpty() {
-        return AdventureUtil.formatAll("<prefix><#FF9CBB>The whitelist is empty.");
+        return AdventureUtil.formatAll("<prefix><#FF9CBB>The whitelist is empty!");
     }
     public static Component reload() {
         return AdventureUtil.formatAll("<prefix><#FBC36F>The whitelist storage was reloaded and the config was force reloaded.");
     }
     public static Component whitelistAlreadyEmpty() {
-        return AdventureUtil.formatAll("<prefix><#FBC36F>The whitelist is already empty.");
+        return AdventureUtil.formatAll("<prefix><#FBC36F>The whitelist is already empty!");
     }
     public static Component whitelistCleared() {
         return AdventureUtil.formatAll("<prefix><#FBC36F>The whitelist was cleared.");

@@ -43,7 +43,16 @@ public interface DataGetter {
      * @param page the page to the get the index.
      * @return list of the players registered or empty if none was found.
      */
-    List<WhitelistEntry> listIndex(int page);
+    default List<WhitelistEntry> listIndex(int page) {
+        return listAmount(10, page);
+    }
+    /**
+     * Get a list of entries according to the provided amount limit and offset.
+     * @param limit the limit amount of entries to return.
+     * @param offset the offset factor, it gets calculated with the limit
+     * @return list of the players registered or empty if none was found.
+     */
+    List<WhitelistEntry> listAmount(int limit, int offset);
     /**
      * Save or replace the player data
      * @param player data to be used

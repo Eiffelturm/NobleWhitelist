@@ -63,10 +63,12 @@ public class DatabaseSQL implements DataGetter {
             + "` (`Name`, `UUID`, `Discord`, `Whitelisted`) " + "VALUES (?, ?, ?, ?) ";
     protected static final String UPDATE_DATA = "UPDATE `" + TABLE_NAME
             + "` SET `Name`=?, `UUID`=?, `Discord`=?, `Whitelisted`=? WHERE `ID`=?";
-    protected static String SELECT_AMOUNT(int m) {
-        if (m <= 1) return "SELECT * FROM `" + TABLE_NAME + "` ORDER BY `ID` LIMIT 10";
-        int amount = 10 * (m - 1);
-        return "SELECT * FROM `" + TABLE_NAME + "` ORDER BY `ID` LIMIT 10 OFFSET " + amount;
+    protected static String statementSelectAmount(int limit, int offset) {
+        if (limit < 0) return "SELECT * FROM `" + TABLE_NAME + "` ORDER BY `ID`";
+        int l = Math.max(limit, 1);
+        if (offset <= 1) return "SELECT * FROM `" + TABLE_NAME + "` ORDER BY `ID` LIMIT " + l;
+        int o = l * (offset - 1);
+        return "SELECT * FROM `" + TABLE_NAME + "` ORDER BY `ID` LIMIT " + l + " OFFSET " + o;
     }
     protected final HikariDataSource dataSource;
     public DatabaseSQL(String poolName, ThreadFactory threadFactory, HikariConfig config) {
@@ -154,8 +156,9 @@ public class DatabaseSQL implements DataGetter {
         return null;
     }
     @Override
-    public List<WhitelistEntry> listIndex(int page) {
-        String state = SELECT_AMOUNT(page);
+    public List<WhitelistEntry> listAmount(int limit, int offset) {
+        if (limit == 0) return List.of();
+        String state = statementSelectAmount(limit, offset);
         List<WhitelistEntry> list = new ArrayList<>();
         try (Connection con = dataSource.getConnection();
              Statement statement = con.createStatement()) {

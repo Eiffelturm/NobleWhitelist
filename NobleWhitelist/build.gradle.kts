@@ -52,7 +52,7 @@ dependencies {
         exclude(module=("spigot-api"))
     }
     compileOnly("com.github.nobeld","simplixstorage","3.2.9-rc.5")
-    compileOnly("com.zaxxer", "HikariCP", "7.0.2") {
+    compileOnly("com.zaxxer", "HikariCP", "7.1.0") {
         exclude("slf4j-api")
     }
     compileOnly("com.github.nobeld.slf4j-ov", "slf4j-jdk14", "ffbbfcf8e2")
@@ -70,8 +70,8 @@ dependencies {
     }
     compileOnly("net.kyori","adventure-text-minimessage","4.24.0")
 
-    compileOnly("org.incendo", "cloud-paper", "2.0.0-beta.16")
-    compileOnly("org.incendo", "cloud-minecraft-extras", "2.0.0-beta.16") {
+    compileOnly("org.incendo", "cloud-paper", "2.0.1")
+    compileOnly("org.incendo", "cloud-minecraft-extras", "2.0.0") {
         exclude(module=("adventure-text-minimessage"))
         exclude(module=("adventure-api"))
     }

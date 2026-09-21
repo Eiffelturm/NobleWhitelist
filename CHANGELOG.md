@@ -1,9 +1,10 @@
 # Changelog
 
-## Main 1.2.25 - Ds 1.1.13 | 2026-09-20
+## Main 1.2.25-26 - Ds 1.1.13 | 2026-09-20
 
 ### Added:
 - New "all" argument for the "list" command, this argument allows further customization to the number of entries and how these are provided, check the wiki for more details.
+- Added legacy notice once the next major releases.
 
 ### Changes:
 - Updated some libraries and cloud library for proper 26.3 support. ([#24](https://github.com/NobelD/NobleWhitelist/pull/24))

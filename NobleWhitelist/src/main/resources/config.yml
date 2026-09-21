@@ -85,5 +85,7 @@ messages:
 version:
   # Notify when there is a new update.
   notify-update: true
+  # DO NOT MODIFY
+  notify-path-new: false
   # DO NOT MODIFY, THIS MAY FORCE CHANGES AND CREATE ERRORS
   version: 3

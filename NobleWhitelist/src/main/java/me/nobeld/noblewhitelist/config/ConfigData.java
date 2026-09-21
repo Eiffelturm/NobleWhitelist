@@ -6,6 +6,7 @@ import me.nobeld.noblewhitelist.model.checking.CheckingOption;
 import me.nobeld.noblewhitelist.model.checking.CheckingType;
 import me.nobeld.noblewhitelist.model.storage.ConfigContainer;
 import me.nobeld.noblewhitelist.model.whitelist.VanillaWhitelistType;
+import me.nobeld.noblewhitelist.util.UpdateChecker;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -37,6 +38,10 @@ public class ConfigData {
         return configFile;
     }
     public void refreshData() {
+        var path = get(ServerCF.newerPath);
+        if (path != null && path) {
+            UpdateChecker.newPath = true;
+        }
 
         List<String> remove = new ArrayList<>();
 
@@ -158,6 +163,7 @@ public class ConfigData {
     public static class ServerCF {
         public static final ConfigContainer<Integer> configVersion = new ConfigContainer<>("version.version", 3);
         public static final ConfigContainer<Boolean> notifyUpdate = new ConfigContainer<>("version.notify-update", true);
+        public static final ConfigContainer<Boolean> newerPath = new ConfigContainer<>("version.notify-path-new", false);
     }
     public CheckingOption getChecking(CheckingType type) {
         return switch (type) {

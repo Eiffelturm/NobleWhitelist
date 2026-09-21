@@ -4,6 +4,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import me.nobeld.noblewhitelist.NobleWhitelist;
+import me.nobeld.noblewhitelist.config.ConfigData;
 import me.nobeld.noblewhitelist.model.base.BaseVersioning;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
@@ -19,6 +20,7 @@ import java.util.*;
 import java.util.logging.Level;
 
 public class UpdateChecker {
+    public static Boolean newPath = null;
     public BaseVersioning data;
     public final Version version;
     private static UsefulLinks links = null;
@@ -121,6 +123,20 @@ public class UpdateChecker {
         }
     }
     public UpdateStatus githubCheck(boolean cooldown) {
+        var status = UpdateStatus.NO_DATA;
+        if (newPath == null) {
+            status = githubCheck(cooldown, "https://raw.githubusercontent.com/nobeld/noblewhitelist/master/versions.json");
+        }
+        if (status.noExist()) {
+            status = githubCheck(cooldown, "https://raw.githubusercontent.com/nobeld/noblewhitelist/legacy/versions.json");
+            if (newPath == null && !status.noExist()) {
+                newPath = true;
+                NobleWhitelist.getPlugin().getConfigD().set(ConfigData.ServerCF.newerPath, true);
+            }
+        }
+        return status;
+    }
+    public UpdateStatus githubCheck(boolean cooldown, String path) {
         if (version == null) {
             return UpdateStatus.NO_DATA;
         }
@@ -131,7 +147,7 @@ public class UpdateChecker {
         }
         HttpURLConnection con = null;
         try {
-            con = (HttpURLConnection) new URL("https://raw.githubusercontent.com/nobeld/noblewhitelist/master/versions.json").openConnection();
+            con = (HttpURLConnection) new URL(path).openConnection();
 
             int timed_out = 1500;
             con.setRequestProperty("accept", "application/json");
@@ -144,7 +160,7 @@ public class UpdateChecker {
             return UpdateStatus.NO_DATA;
         } catch (Throwable ex) {
             NobleWhitelist.log(Level.WARNING, "An error occurred while checking for updates: " + ex.getClass().getCanonicalName() + " - " + ex.getMessage());
-            NobleWhitelist.log(Level.WARNING, "Skip this error if you have poor or no internet connection, if the update service is not down check the source for updates!");
+            NobleWhitelist.log(Level.WARNING, "If there is no internet issues you may want to manually check for updates!");
             return UpdateStatus.CANT_REACH;
         } finally {
             if (con != null) con.disconnect();
@@ -161,6 +177,11 @@ public class UpdateChecker {
             messages.add(AdventureUtil.formatAll(prefix + "<bold><#FF2414>\\<!> <#FF6176>Your version was marked as critical, you may want to update to a safer version asap!</bold>"));
             messages.add(AdventureUtil.formatAll(prefix + "<#F1B65C>There is a new update for <gold>" + name));
             messages.add(AdventureUtil.formatAll(prefix + "<#F1B65C>Your version: <#FF8B4D>" + version + " <yellow>| <#F1B65C>Latest: <#6FEF22>" + latest));
+            messages.add(AdventureUtil.formatAll(prefix + "<#F1B65C>Download it at: <#75CDFF>" + downloadUrl));
+            audience.sendMessage(Component.join(JoinConfiguration.newlines(), messages));
+        } else if (!softSkip && newPath) {
+            messages.add(AdventureUtil.formatAll(prefix + "<#F1B65C>There is a new major update for <gold>" + name));
+            messages.add(AdventureUtil.formatAll(prefix + "<#F1B65C>Check the changelog before updating, some things may break!"));
             messages.add(AdventureUtil.formatAll(prefix + "<#F1B65C>Download it at: <#75CDFF>" + downloadUrl));
             audience.sendMessage(Component.join(JoinConfiguration.newlines(), messages));
         } else if (status.shouldPrint(softSkip)) {
